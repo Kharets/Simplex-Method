@@ -1,0 +1,10 @@
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\bin\Debug\WFsqlApp1.exe.config
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\bin\Debug\WFsqlApp1.exe
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\bin\Debug\WFsqlApp1.pdb
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.csproj.AssemblyReference.cache
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.Properties.Resources.resources
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.csproj.GenerateResource.cache
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.csproj.CoreCompileInputs.cache
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.exe
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.pdb
+D:\кодики\C++++\WFsqlApp1\WFsqlApp1\obj\Debug\WFsqlApp1.Form1.resources
