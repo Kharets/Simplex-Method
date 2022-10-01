@@ -88,8 +88,8 @@ namespace WFsqlApp1
                             dataGridView1.Rows[y].Cells[x].Style.BackColor = Color.Gray;
                         }
 
-                    for (int i = 0; i < X; i++) { MassX[i] = "X " + (i + 1); }          //создание массивов и столбцов иксов и игреков
-                    for (int i = 0; i < Y; i++) { MassY[i] = "Y " + (i + 1); }
+                    for (int i = 0; i < 20; i++) { MassX[i] = "X " + (i + 1); }          //создание массивов и столбцов иксов и игреков
+                    for (int i = 0; i < 20; i++) { MassY[i] = "Y " + (i + 1); }
 
                     for (int y = 0; y < Y + 4; y++)                 //покраска и запрещение редактирования таблицы ввода с последующими изменениями
                         for (int x = 0; x < X + 2; x++)
@@ -409,8 +409,6 @@ namespace WFsqlApp1
                         Matr[y, x] = Matr0[y % Y, x];
                     }
 
-
-
                 int I = 0;
 
                 for (int x = 0; x < X; x++)
@@ -425,7 +423,7 @@ namespace WFsqlApp1
                                 {
                                     for (int x1 = 0; x1 < X + 1; x1++)
                                     {
-                                        if (x1 != x)
+                                        if (x1 != x && Matr[y1, x] != 0)
                                             Matr[y1, x1] /= Matr[y1, x];
                                     }
                                     Matr[y1, x] = 1;
@@ -435,7 +433,7 @@ namespace WFsqlApp1
                                 for (int y1 = 0; y1 < Che0; y1++)
                                     for (int x1 = 0; x1 < X + 1; x1++)
                                     {
-                                        if (y1 != y)
+                                        if (y1 != y && Matr[y1, x] != 0)
                                             Matr[y1, x1] -= Matr[y, x1];
                                     }
 
