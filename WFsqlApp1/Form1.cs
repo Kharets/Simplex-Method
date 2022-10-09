@@ -36,7 +36,8 @@ namespace WFsqlApp1
 
         private string Ans = "";                        //строка ответа
         private double[] Ans_X = new double[20];        //массив отсортированых иксов из последней таблицы для ответа
-        private bool ChAns = false;                       //преверка есть ли ответ
+        private bool ChAns = false;                     //преверка есть ли ответ
+        private bool ChErr = false;                     //преверка есть ли Error
 
         private double[,,] Matr0Save = new double[20, 20, 20];   //массивы для сохранения вывода и возвращения к нему
         private string[,] MassYSave = new string[20, 20];
@@ -46,11 +47,12 @@ namespace WFsqlApp1
         private int[] ColSaveX = new int[20];
         private int TL = 0;                             //переменная чтобы не перегнать действия при возврате вперед
 
-        private bool[] MX0 = new bool[20];
+        private bool[] MX0 = new bool[20];              //массив показывающий вабранные переменные или нет
+        private int Che;                                //переменная для подсчета кол-ва выбранных элементов для гауса
 
-        private int Che;
+        private bool ChOpen = false;                    //был ли открыт файл
 
-        private bool ChOpen = false;
+        private int ChoiceX_Auto;                       //переменная бля автоматического выбора столбца
 
 
 
@@ -275,9 +277,15 @@ namespace WFsqlApp1
             }
 
             if (MisCh && MisCh1 && !ChAns)
+            {
                 textBox6.Text = "Ф-я не ограничена";
+                ChErr = true;
+            }
             if (!ChAns && !MisCh1)
+            {
                 textBox6.Text = "А как решать?";
+                ChErr = true;
+            }
 
         }
 
@@ -377,8 +385,7 @@ namespace WFsqlApp1
                                 MY = y;
                                 MY_P = Matr0[y, X] / Matr0[y, x];
                                 Ch = true;
-                            }
-                            dataGridView1.Rows[y + 1].Cells[x + 1].Style.BackColor = Color.DarkOliveGreen;
+                            }                            
                         }
                     }
                     if(Ch)
@@ -535,6 +542,8 @@ namespace WFsqlApp1
             Ans = "";
             textBox6.Text = "";
             Check_2 = false;
+            ChAns = false;
+            ChErr = false;
             for (int x = 0; x < X; x++) { Ans_X[x] = 0; }
             for (int x = 0; x < X; x++) { MX0[x] = false; }
         }
@@ -592,6 +601,23 @@ namespace WFsqlApp1
                     Gauss();                
 
                 C_Out();                //вывод (в данном случае 0-й таблицы)
+
+
+                if (checkBox2.Checked == true)
+                    while(!ChAns && !ChErr)
+                    {
+                        button2_Click(sender, e);
+                        for (int x = 0; x < X; x++)
+                        {
+                            double AutoMin = 99999;
+                            string[] sub = MassX[x].Split(' ');
+                            if (Matr0[Y, x] < 0 && sub[0] != "Y" && Matr0[Y, x]<AutoMin)
+                            {
+                                AutoMin = Matr0[Y, x];
+                                ChoiceX_Auto = x + 1;
+                            }
+                        }
+                    }
             }
             catch (Exception ex)
             {
@@ -602,47 +628,68 @@ namespace WFsqlApp1
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)          //полуавтоматическое пошаговое решение
+        private void button2_Click(object sender, EventArgs e)          //пошаговое решение
         {
+            int ChoiceX;
+
             try
-            {
-                int ChoiceX = dataGridView1.SelectedCells[0].ColumnIndex;
-                int ChoiceY = dataGridView1.SelectedCells[0].RowIndex;
+            {               
+
+                if (checkBox2.Checked != true)
+                {
+                    ChoiceX = dataGridView1.SelectedCells[0].ColumnIndex;
+                    //int ChoiceY = dataGridView1.SelectedCells[0].RowIndex;
+                }
+                else
+                {
+                    ChoiceX = ChoiceX_Auto;
+                }
+
+
 
                 if (ChoiceX > 0 && ChoiceX < X + 1)         //проверка в праывильном ли поле выбирает пользователь
                     try
                     {
                         ChoiceX--;
-                        ChoiceY--;
+                        //ChoiceY--;
                         string[] sub = MassX[ChoiceX].Split(' ');
                         BackCh = false;
                         bool Ch = true;
 
 
                         if (Matr0[Y, ChoiceX] < 0 && sub[0] != "Y")           //проверка на отрицательность выбраного элемента нижней строки
-                        {                            
-                            if (checkBox2.Checked == true)
-                            {
-                                MinY_P = 99999;
-                                for (int y = 0; y < Y; y++)
-                                {
-                                    if (Matr0[y, ChoiceX] > 0 && Matr0[y, X] / Matr0[y, ChoiceX] < MinY_P)            //поиск минимального базиса
-                                    {
-                                        MinY = y;
-                                        MinY_P = Matr0[y, X] / Matr0[y, ChoiceX];
-                                        Ch = false;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (ChoiceY > -1 && ChoiceY < Y && Matr0[ChoiceY, ChoiceX] > 0)
-                                {
-                                    Ch = false;
-                                    MinY = ChoiceY;
-                                }
+                        {
 
+                            MinY_P = 99999;
+                            for (int y = 0; y < Y; y++)
+                            {
+                                if (Matr0[y, ChoiceX] > 0 && Matr0[y, X] / Matr0[y, ChoiceX] < MinY_P)            //поиск минимального базиса
+                                {
+                                    MinY = y;
+                                    MinY_P = Matr0[y, X] / Matr0[y, ChoiceX];
+                                    Ch = false;
+                                }
                             }
+
+
+
+                            //MinY_P = 99999;
+                            //for (int y = 0; y < Y; y++)
+                            //{
+                            //    if (Matr0[y, ChoiceX] > 0 && Matr0[y, X] / Matr0[y, ChoiceX] < MinY_P)            //поиск минимального базиса
+                            //    {
+                            //        MinY = y;
+                            //        MinY_P = Matr0[y, X] / Matr0[y, ChoiceX];
+                            //    }
+                            //}
+
+                            //if (ChoiceY > -1 && ChoiceY < Y && Matr0[ChoiceY, ChoiceX] > 0 && ChoiceY == MinY)
+                            //{
+                            //    Ch = false;
+                            //    MinY = ChoiceY;
+                            //}
+
+
                             if (Ch)         //проверка есть ли в выбранном столбце подходящие элементы
                             {
                                 textBox6.Text = "не подходит";
@@ -762,6 +809,8 @@ namespace WFsqlApp1
             {
                 textBox6.Text = "";
                 Check_2 = false;
+                ChAns = false;
+                ChErr = false;
 
                 for (int x = 0; x < X; x++) { Ans_X[x] = 0; }
 
