@@ -47,6 +47,9 @@ namespace WFsqlApp1
         private int[] ColSaveX = new int[20];
         private int TL = 0;                             //переменная чтобы не перегнать действия при возврате вперед
 
+        public string[,,] DGVsave = new string[20, 20, 20];     // сохранение вывода для окна история
+        public string[,] InterimSave = new string[20, 20];
+
         private bool[] MX0 = new bool[20];              //массив показывающий вабранные переменные или нет
         private int Che;                                //переменная для подсчета кол-ва выбранных элементов для гауса
 
@@ -54,11 +57,16 @@ namespace WFsqlApp1
 
         private int ChoiceX_Auto;                       //переменная бля автоматического выбора столбца
 
+        private int[] MPersH = new int[20];
 
 
+
+
+        public static Form1 SelfRef { get; set; }
         public Form1()
         {
-            InitializeComponent();
+            SelfRef = this;
+            InitializeComponent();            
         }
 
         private void C_In()         //ввод
@@ -157,6 +165,10 @@ namespace WFsqlApp1
                 for (int x = 0; x < X + 2; x++)
                     dataGridView1.Rows[y].Cells[x].Style.BackColor = Color.Gray;
 
+
+            Drob();
+
+
             bool Check = true;          //проверка на создание 2-й таблицы
             Ans = "";
             double Result = 0;
@@ -210,6 +222,13 @@ namespace WFsqlApp1
                 }
                 else
                 {
+
+                    for (int y = 0; y < Y + 2; y++)               //сохранение для истории
+                        for (int x = 0; x < X + 2; x++)
+                            if (dataGridView1.Rows[y].Cells[x].Value != null)
+                                InterimSave[y, x] = Convert.ToString(dataGridView1.Rows[y].Cells[x].Value);
+
+
                     Check_2 = true;
                     TryPr = 0;
 
@@ -249,10 +268,13 @@ namespace WFsqlApp1
 
 
 
-            ChToMis(); 
-            Drob();
+            ChToMis();
             OppPreview();
 
+            for (int y = 0; y < Y + 2; y++)               //сохранение для истории
+                for (int x = 0; x < X + 2; x++)
+                    if (dataGridView1.Rows[y].Cells[x].Value != null)
+                        DGVsave[Try, y, x] = Convert.ToString(dataGridView1.Rows[y].Cells[x].Value);
         }
 
         private void ChToMis()      //проверка на неограниченность
@@ -376,20 +398,23 @@ namespace WFsqlApp1
                 {
                     bool Ch = false;
                     double MY_P = 99999;
-                    for (int y = 0; y < Y; y++)
+                    if (Matr0[Y, x] < 0)
                     {
-                        if (Matr0[y, x] > 0 )            //поиск минимального базиса
+                        for (int y = 0; y < Y; y++)
                         {
-                            if (Matr0[y, X] / Matr0[y, x] < MY_P)
+                            if (Matr0[y, x] > 0)            //поиск минимального базиса
                             {
-                                MY = y;
-                                MY_P = Matr0[y, X] / Matr0[y, x];
-                                Ch = true;
-                            }                            
+                                if (Matr0[y, X] / Matr0[y, x] < MY_P)
+                                {
+                                    MY = y;
+                                    MY_P = Matr0[y, X] / Matr0[y, x];
+                                    Ch = true;
+                                }
+                            }
                         }
+                        if (Ch)
+                            dataGridView1.Rows[MY + 1].Cells[x + 1].Style.BackColor = Color.Green;
                     }
-                    if(Ch)
-                        dataGridView1.Rows[MY + 1].Cells[x + 1].Style.BackColor = Color.Green;
                 }
             }
 
@@ -549,6 +574,14 @@ namespace WFsqlApp1
         }
 
 
+        private void Refresh_1()
+        {
+            if (Form2.SelfRef != null)
+            {
+                Form2.SelfRef.Refresh_2();
+            }
+
+        }
 
 
         private void button1_Click(object sender, EventArgs e)          //старт и сброс
@@ -604,20 +637,21 @@ namespace WFsqlApp1
 
 
                 if (checkBox2.Checked == true)
-                    while(!ChAns && !ChErr)
+                    while (!ChAns && !ChErr)
                     {
                         button2_Click(sender, e);
+                        double AutoMin = 99999;
                         for (int x = 0; x < X; x++)
-                        {
-                            double AutoMin = 99999;
+                        {                            
                             string[] sub = MassX[x].Split(' ');
-                            if (Matr0[Y, x] < 0 && sub[0] != "Y" && Matr0[Y, x]<AutoMin)
+                            if (sub[0] != "Y" && Matr0[Y, x] < AutoMin)
                             {
                                 AutoMin = Matr0[Y, x];
                                 ChoiceX_Auto = x + 1;
                             }
                         }
                     }
+                Refresh_1();
             }
             catch (Exception ex)
             {
@@ -652,10 +686,18 @@ namespace WFsqlApp1
                     {
                         ChoiceX--;
                         //ChoiceY--;
-                        string[] sub = MassX[ChoiceX].Split(' ');
-                        BackCh = false;
+                        string[] sub = MassX[ChoiceX].Split(' ');                        
                         bool Ch = true;
 
+
+                        if (BackCh)
+                        {                            
+                            BackCh = false;
+
+                            if (TryPr == Try)
+                                Check_2 = false;                                
+                            
+                        }
 
                         if (Matr0[Y, ChoiceX] < 0 && sub[0] != "Y")           //проверка на отрицательность выбраного элемента нижней строки
                         {
@@ -752,6 +794,7 @@ namespace WFsqlApp1
                     }
                 else
                     textBox6.Text = "не правильно выделено";
+                Refresh_1();
             }
             catch { MessageBox.Show("Не сейчас, снвчала объявите таблицы"); }
         }
@@ -784,6 +827,7 @@ namespace WFsqlApp1
             }
             else
                 textBox6.Text = "Нет файла!";
+            Refresh_1();
         }
 
         private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)       //сохранение в файл
@@ -807,10 +851,11 @@ namespace WFsqlApp1
         {
             if (Try > 0)
             {
-                textBox6.Text = "";
-                Check_2 = false;
+                textBox6.Text = "";                
                 ChAns = false;
                 ChErr = false;
+
+                //Check_2 = false;
 
                 for (int x = 0; x < X; x++) { Ans_X[x] = 0; }
 
@@ -826,9 +871,11 @@ namespace WFsqlApp1
                     MassY[y] = MassYSave[Try, y];
                 for (int y = 0; y < Y + 1; y++)
                     for (int x = 0; x < X + 1; x++)
-                        Matr0[y, x] = Matr0Save[Try, y, x];
+                        Matr0[y, x] = Matr0Save[Try, y, x];                
+
                 C_Out();
                 dataGridView1.Rows[ColSaveY[Try]].Cells[ColSaveX[Try]].Style.BackColor = Color.Red;
+                Refresh_1();
             }
 
         }
@@ -849,6 +896,7 @@ namespace WFsqlApp1
                         Matr0[y, x] = Matr0Save[Try, y, x];
                 C_Out();
                 dataGridView1.Rows[ColSaveY[Try]].Cells[ColSaveX[Try]].Style.BackColor = Color.Red;
+                Refresh_1();
             }
         }
 
@@ -885,12 +933,42 @@ namespace WFsqlApp1
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
 
-        }
-
+        }    
+        
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Программа изображает бурную деятельность с умным интерфейсои");
         }
+                
+        private void историяToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            Form2 f2 = new Form2();
 
+            //f2.X = this.X;
+            //f2.Y = this.Y;
+            //f2.Try = this.Try;            
+            //f2.TL = this.TL;
+            //f2.BackCh = this.BackCh;
+
+            f2.DGV = this.DGVsave;
+            f2.InterimSave = this.InterimSave;
+
+            f2.ColSaveY = this.ColSaveY;
+            f2.ColSaveX = this.ColSaveX;
+
+
+            f2.Show();
+            Refresh_1();
+
+        }
+
+
+        public int GetX() { return X; }
+        public int GetY() { return Y; }
+        public int GetTry() { return Try; }
+        public int GetTL() { return TL; }
+        public bool GetBackCh() { return BackCh; }
+        public bool GetCheck_2() { return Check_2; }
     }
 }
